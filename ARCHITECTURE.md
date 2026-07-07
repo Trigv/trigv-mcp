@@ -69,6 +69,7 @@
 | `title` | Yes | string | Max 255 |
 | `description` | No | string | Max 1000 |
 | `image_url` | No | string | Max 2048 |
+| `url` | No | string | Max 2048; passed through delivery payloads; not persisted |
 | `level` | No | enum | `info`, `success`, `warning`, `error` |
 | `delivery_urgency` | No | enum | `standard`, `time_sensitive` |
 | `event_type` | No | string | Max 120 |

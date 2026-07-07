@@ -24,6 +24,9 @@ export const sendEventInputSchema = {
   image_url: zMaxCodePoints(FIELD_MAX_LENGTHS.image_url)
     .optional()
     .describe('Optional HTTPS image URL (not stored server-side)'),
+  url: zMaxCodePoints(FIELD_MAX_LENGTHS.url)
+    .optional()
+    .describe('Optional destination URL (not stored server-side)'),
   level: z
     .enum(['info', 'success', 'warning', 'error'])
     .optional()

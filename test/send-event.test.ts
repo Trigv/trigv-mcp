@@ -107,4 +107,43 @@ describe('send_event tool', () => {
     });
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it('forwards url when provided', async () => {
+    const fetch = mockFetch((_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      expect(body.url).toBe('https://example.com/deployments/42');
+      return new Response(JSON.stringify({ event: sampleEvent }), { status: 202 });
+    });
+
+    const result = await runSendEvent(
+      {
+        channel: 'deploys',
+        title: 'Production deploy complete',
+        url: 'https://example.com/deployments/42',
+      },
+      { apiKey: API_KEY, fetch },
+    );
+
+    expect(result.isError).toBeUndefined();
+    expect(fetch).toHaveBeenCalled();
+  });
+
+  it('rejects overlength url before HTTP', async () => {
+    const fetch = mockFetch(() => new Response('{}', { status: 202 }));
+    const result = await runSendEvent(
+      {
+        channel: 'general',
+        title: 'x',
+        url: `https://example.com/${'a'.repeat(2040)}`,
+      },
+      { apiKey: API_KEY, fetch },
+    );
+
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      success: false,
+      error: { type: 'ValidationError' },
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });
