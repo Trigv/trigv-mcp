@@ -4,6 +4,7 @@ import {
   AuthenticationError,
   ConfigurationError,
   NotFoundError,
+  RateLimitError,
   ValidationError,
 } from '../src/errors.js';
 
@@ -193,5 +194,61 @@ describe('TrigvClient', () => {
     });
     const client = new TrigvClient({ apiKey: API_KEY, fetch, maxRetries: 0 });
     await client.sendEvent({ channel: 'general', title: 'x' });
+  });
+
+  it('rejects negative maxRetries', () => {
+    expect(() => new TrigvClient({ apiKey: API_KEY, maxRetries: -1 })).toThrow(ValidationError);
+  });
+
+  it('does not retry POST without idempotency key on 503', async () => {
+    let calls = 0;
+    const fetch = mockFetch(() => {
+      calls += 1;
+      return new Response(JSON.stringify({ message: 'Service unavailable' }), { status: 503 });
+    });
+    const client = new TrigvClient({ apiKey: API_KEY, fetch, maxRetries: 2 });
+    await expect(client.sendEvent({ channel: 'general', title: 'x' })).rejects.toThrow();
+    expect(calls).toBe(1);
+  });
+
+  it('retries burst 429 with Retry-After seconds', async () => {
+    let calls = 0;
+    const fetch = mockFetch(() => {
+      calls += 1;
+      if (calls === 1) {
+        return new Response(JSON.stringify({ message: 'Too many requests for this API key.' }), {
+          status: 429,
+          headers: { 'Retry-After': '1' },
+        });
+      }
+      return new Response(JSON.stringify({ event: sampleEvent }), { status: 202 });
+    });
+
+    const client = new TrigvClient({ apiKey: API_KEY, fetch, maxRetries: 2 });
+    await client.sendEvent({
+      channel: 'general',
+      title: 'x',
+      idempotency_key: 'k1',
+    });
+    expect(calls).toBe(2);
+  });
+
+  it('does not retry monthly-cap 429 even with idempotency key', async () => {
+    let calls = 0;
+    const fetch = mockFetch(() => {
+      calls += 1;
+      return new Response(
+        JSON.stringify({ message: 'Monthly event limit reached for this workspace.' }),
+        { status: 429, headers: { 'Retry-After': '60' } },
+      );
+    });
+
+    const client = new TrigvClient({ apiKey: API_KEY, fetch, maxRetries: 2 });
+    await expect(
+      client.sendEvent({ channel: 'general', title: 'x', idempotency_key: 'k1' }),
+    ).rejects.toSatisfy((error: unknown) => {
+      return error instanceof RateLimitError && error.retryable === false;
+    });
+    expect(calls).toBe(1);
   });
 });

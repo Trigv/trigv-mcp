@@ -1,21 +1,27 @@
 import * as z from 'zod/v4';
 import { FIELD_MAX_LENGTHS } from '../constants.js';
 
+function codePointCount(value: string): number {
+  return Array.from(value).length;
+}
+
+function zMaxCodePoints(max: number) {
+  return z.string().refine((value) => codePointCount(value) <= max, {
+    message: `must be at most ${max} characters`,
+  });
+}
+
 export const sendEventInputSchema = {
-  channel: z
-    .string()
-    .min(1)
-    .max(FIELD_MAX_LENGTHS.channel)
+  channel: zMaxCodePoints(FIELD_MAX_LENGTHS.channel)
+    .refine((value) => value.length >= 1, { message: 'Required' })
     .describe('Channel slug (e.g. general, deploys)'),
-  title: z.string().min(1).max(FIELD_MAX_LENGTHS.title).describe('Notification title'),
-  description: z
-    .string()
-    .max(FIELD_MAX_LENGTHS.description)
+  title: zMaxCodePoints(FIELD_MAX_LENGTHS.title)
+    .refine((value) => value.length >= 1, { message: 'Required' })
+    .describe('Notification title'),
+  description: zMaxCodePoints(FIELD_MAX_LENGTHS.description)
     .optional()
     .describe('Optional body text (not stored server-side)'),
-  image_url: z
-    .string()
-    .max(FIELD_MAX_LENGTHS.image_url)
+  image_url: zMaxCodePoints(FIELD_MAX_LENGTHS.image_url)
     .optional()
     .describe('Optional HTTPS image URL (not stored server-side)'),
   level: z
@@ -26,14 +32,10 @@ export const sendEventInputSchema = {
     .enum(['standard', 'time_sensitive'])
     .optional()
     .describe('Delivery urgency (default: standard)'),
-  event_type: z
-    .string()
-    .max(FIELD_MAX_LENGTHS.event_type)
+  event_type: zMaxCodePoints(FIELD_MAX_LENGTHS.event_type)
     .optional()
     .describe('Free-form event label (e.g. deploy.completed)'),
-  idempotency_key: z
-    .string()
-    .max(FIELD_MAX_LENGTHS.idempotency_key)
+  idempotency_key: zMaxCodePoints(FIELD_MAX_LENGTHS.idempotency_key)
     .optional()
     .describe('Dedup key per workspace; retries return the existing event'),
 };

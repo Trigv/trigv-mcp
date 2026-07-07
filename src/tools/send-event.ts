@@ -23,7 +23,6 @@ export async function runSendEvent(
       apiKey,
       baseUrl: options.baseUrl ?? process.env.TRIGV_BASE_URL,
       fetch: options.fetch,
-      maxRetries: 2,
     });
 
     const result = await client.sendEvent(args);
