@@ -1,7 +1,7 @@
 {
   "name": "@trigv/mcp",
   "version": "0.2.0",
-  "description": "MCP server for Trigv — send notification events from AI clients",
+  "description": "MCP server for Trigv (trigv.com) — send push notification events from AI clients",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -46,7 +46,7 @@
     "type": "git",
     "url": "https://github.com/Trigv/trigv-mcp.git"
   },
-  "homepage": "https://github.com/Trigv/trigv-mcp#readme",
+  "homepage": "https://trigv.com/integrations/mcp/",
   "bugs": {
     "url": "https://github.com/Trigv/trigv-mcp/issues"
   },

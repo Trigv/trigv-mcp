@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- README and package metadata link to trigv.com docs.
 - Default API URL is now `https://api.trigv.com`; the path is `/v1/events`. A `TRIGV_BASE_URL` ending in `/api` keeps working.
 - `public_id` values are 26 character ULIDs (no `evt_` prefix).
 - Rate limit is 60 requests per minute per workspace.

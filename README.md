@@ -1,5 +1,7 @@
 # @trigv/mcp
 
+[Docs](https://trigv.com/integrations/mcp/) | [API reference](https://trigv.com/docs/api/) | [Free tools](https://trigv.com/tools/) | [Get an API key](https://app.trigv.com/register)
+
 MCP (Model Context Protocol) server for [Trigv](https://trigv.com). Lets AI clients in Cursor, Claude Code, and VS Code send notification events to your Trigv workspace.
 
 ## What Trigv is
