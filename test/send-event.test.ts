@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+import * as z from 'zod/v4';
 import { runSendEvent } from '../src/tools/send-event.js';
+import { sendEventOutputSchema } from '../src/tools/schemas.js';
 
 const API_KEY = 'trgv_testkey1_abcdefghijklmnopqrstuvwxyz123456';
 
@@ -191,5 +193,16 @@ describe('send_event tool', () => {
     expect(result.structuredContent).toMatchObject({
       error: { type: 'ServiceUnavailableError', retryable: true, retry_after_seconds: 3 },
     });
+  });
+});
+
+describe('send_event output schema', () => {
+  it('accepts an event status the server may add later', () => {
+    const schema = z.object(sendEventOutputSchema);
+    const result = schema.safeParse({
+      success: true,
+      event: { ...sampleEvent, status: 'delivered_partially' },
+    });
+    expect(result.success).toBe(true);
   });
 });

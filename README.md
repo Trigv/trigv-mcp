@@ -80,7 +80,7 @@ Sends a notification event via `POST /v1/events`.
 
 ## Idempotency
 
-When you set `idempotency_key`, retries with the same key return the existing event (`duplicate: true`, HTTP 200, message `already stored`) without billing again. A 409 or 503 is retried automatically with the same key, waiting for `Retry-After`.
+When you set `idempotency_key`, retries with the same key return the existing event (`duplicate: true`, HTTP 200, message `already stored`) without billing again. A 409, 502, 503 or 504, a network error or a timeout is retried automatically with the same key, waiting for `Retry-After`. If `Retry-After` is longer than the request timeout, the original error is thrown at once, without waiting.
 
 ## Error handling
 

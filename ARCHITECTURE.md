@@ -125,8 +125,8 @@ Matches `trigv-node` `src/client.ts`:
 - `POST {base_url}/v1/events`
 - Headers: `Accept: application/json`, `Content-Type: application/json`, `Authorization: Bearer …`, `User-Agent: trigv-mcp/0.2.0`
 - Client-side validation via shared rules (trim, max lengths, enums, prohibited fields)
-- Retry: max 2 retries, exponential backoff 0.5s / 1s + jitter; only when idempotency key set (or connection GET — not used here)
-- Status mapping: 401 → AuthenticationError, 403 → AuthorizationError, 404 → NotFoundError, 422 → ValidationError, 429 → RateLimitError
+- Retry: max 2 retries, exponential backoff 0.5s / 1s + jitter; only when idempotency key set (there is no connection GET here); also retries 502 and 504; if `Retry-After` is longer than the request timeout, the original error is thrown at once
+- Status mapping: 401 → AuthenticationError, 403 → AuthorizationError, 404 → NotFoundError, 409 → ConflictError, 422 → ValidationError, 429 → RateLimitError, 503 → ServiceUnavailableError
 
 ---
 

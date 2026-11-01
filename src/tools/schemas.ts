@@ -50,7 +50,7 @@ export const sendEventOutputSchema = {
     .object({
       public_id: z.string(),
       event_uuid: z.string(),
-      status: z.enum(['pending', 'sent', 'failed']),
+      status: z.string(),
       level: z.enum(['info', 'success', 'warning', 'error']),
       event_type: z.string().nullable(),
       target_device_count: z.number(),
