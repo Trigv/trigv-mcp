@@ -1,6 +1,6 @@
 {
   "name": "@trigv/mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP server for Trigv (trigv.com) — send push notification events from AI clients",
   "type": "module",
   "main": "./dist/index.js",

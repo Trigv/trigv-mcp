@@ -36,7 +36,7 @@
 
 - Client spawns `npx @trigv/mcp` or `node dist/index.js` as a child process.
 - **stdout** is reserved for JSON-RPC — all logging uses **stderr** (`console.error`).
-- No Streamable HTTP in v0.2.0 (local-only; remote hosting is out of scope).
+- No Streamable HTTP in v0.2.1 (local-only; remote hosting is out of scope).
 
 ---
 
@@ -124,7 +124,7 @@ Provided automatically by `McpServer` when tools are registered — no custom im
 Matches `trigv-node` `src/client.ts`:
 
 - `POST {base_url}/v1/events`
-- Headers: `Accept: application/json`, `Content-Type: application/json`, `Authorization: Bearer …`, `User-Agent: trigv-mcp/0.2.0`
+- Headers: `Accept: application/json`, `Content-Type: application/json`, `Authorization: Bearer …`, `User-Agent: trigv-mcp/0.2.1`
 - Client-side validation via shared rules (trim, max lengths, enums, prohibited fields)
 - Retry: max 2 retries, exponential backoff 0.5s / 1s + jitter; only when idempotency key set (there is no connection GET here); also retries 502 and 504; if `Retry-After` is longer than the request timeout, the original error is thrown at once
 - Status mapping: 401 → AuthenticationError, 403 → AuthorizationError, 404 → NotFoundError, 409 → ConflictError, 422 → ValidationError, 429 → RateLimitError, 503 → ServiceUnavailableError
@@ -149,7 +149,7 @@ No live API calls in CI.
 
 ---
 
-## Out of scope (v0.2.0)
+## Out of scope (v0.2.1)
 
 - `verify_connection` tool / `GET /v1/connection`
 - Streamable HTTP / SSE transports
