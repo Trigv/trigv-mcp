@@ -41,6 +41,42 @@ describe('send_event tool', () => {
     });
   });
 
+  it('includes request_id in the success payload when the header is present', async () => {
+    const fetch = mockFetch(
+      () =>
+        new Response(JSON.stringify({ event: sampleEvent }), {
+          status: 202,
+          headers: { 'X-Request-ID': '01JREQXXXXXXXXXXXXXXXXXXXX' },
+        }),
+    );
+
+    const result = await runSendEvent(
+      { channel: 'deploys', title: 'x' },
+      { apiKey: API_KEY, fetch },
+    );
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      success: true,
+      request_id: '01JREQXXXXXXXXXXXXXXXXXXXX',
+    });
+    expect(z.object(sendEventOutputSchema).safeParse(result.structuredContent).success).toBe(true);
+  });
+
+  it('leaves request_id out of the success payload when the header is missing', async () => {
+    const fetch = mockFetch(
+      () => new Response(JSON.stringify({ event: sampleEvent }), { status: 202 }),
+    );
+
+    const result = await runSendEvent(
+      { channel: 'deploys', title: 'x' },
+      { apiKey: API_KEY, fetch },
+    );
+
+    expect(result.structuredContent).not.toHaveProperty('request_id');
+    expect(z.object(sendEventOutputSchema).safeParse(result.structuredContent).success).toBe(true);
+  });
+
   it('returns duplicate flag on HTTP 200', async () => {
     const fetch = mockFetch(
       () => new Response(JSON.stringify({ event: sampleEvent }), { status: 200 }),

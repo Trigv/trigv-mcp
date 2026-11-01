@@ -37,6 +37,8 @@ export interface Event {
 export interface SendEventResult {
   event: Event;
   duplicate: boolean;
+  /** Value of the `X-Request-ID` response header. `undefined` when the header is missing. */
+  readonly requestId?: string;
 }
 
 export interface ValidationErrors {

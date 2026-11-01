@@ -93,7 +93,8 @@
     "event_type": null,
     "target_device_count": 2,
     "received_at": "2026-06-16T12:00:00+00:00"
-  }
+  },
+  "request_id": "01JXXXXXXXXXXXXXXXXXXXXXXX"
 }
 ```
 

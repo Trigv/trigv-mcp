@@ -57,6 +57,7 @@ export const sendEventOutputSchema = {
       received_at: z.string().nullable(),
     })
     .optional(),
+  request_id: z.string().optional(),
   error: z
     .object({
       type: z.string(),

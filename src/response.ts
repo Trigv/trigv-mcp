@@ -12,6 +12,7 @@ export interface ToolSuccessPayload {
   success: true;
   duplicate: boolean;
   event: SendEventResult['event'];
+  request_id?: string;
 }
 
 export interface ToolErrorPayload {
@@ -41,6 +42,7 @@ export function formatSuccessResult(result: SendEventResult): CallToolResult {
     success: true,
     duplicate: result.duplicate,
     event: result.event,
+    ...(result.requestId ? { request_id: result.requestId } : {}),
   };
 
   const summary = result.duplicate

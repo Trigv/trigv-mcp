@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Typed 409 (`ConflictError`) and 503 (`ServiceUnavailableError`) errors, retried with `Retry-After` when `idempotency_key` is set.
+- Successful tool results include `request_id` (the `X-Request-ID` header; left out when the header is missing).
 - Tool errors include `request_id` (the `X-Request-ID` header) and `retry_after_seconds`.
 - When `Retry-After` is longer than the request timeout, the original 409, 429 or 503 error is thrown at once instead of waiting.
 

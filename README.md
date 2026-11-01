@@ -62,7 +62,7 @@ Sends a notification event via `POST /v1/events`.
 | `event_type` | No | Free-form label (e.g. `deploy.completed`, max 120 characters) |
 | `idempotency_key` | No | Dedup key per workspace (max 190 characters) |
 
-**Success response** includes `event.public_id`, `duplicate` (true when HTTP 200), and other event metadata.
+**Success response** includes `event.public_id`, `duplicate` (true when HTTP 200), other event metadata, and `request_id` (the `X-Request-ID` header; left out if the API sent none).
 
 **Error response** includes `error.type`, `error.message`, and optional `error.errors` for validation failures, `error.status_code`, `error.retryable`, `error.retry_after_seconds` and `error.request_id` (the `X-Request-ID` header; quote it to support).
 

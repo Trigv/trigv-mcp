@@ -138,18 +138,22 @@ export class TrigvClient {
     const body = validateSendEventParams(params);
     const hasIdempotency = Boolean(body.idempotency_key);
 
-    return this.requestWithRetry<SendEventResult>(body, hasIdempotency, (status, parsed) => {
-      if ((status === 202 || status === 200) && parsed?.event) {
-        return { event: parsed.event, duplicate: status === 200 };
-      }
-      errorFromResponse(status, parsed);
-    });
+    return this.requestWithRetry<SendEventResult>(
+      body,
+      hasIdempotency,
+      (status, parsed, requestId) => {
+        if ((status === 202 || status === 200) && parsed?.event) {
+          return { event: parsed.event, duplicate: status === 200, requestId };
+        }
+        errorFromResponse(status, parsed, null, requestId ?? null);
+      },
+    );
   }
 
   private async requestWithRetry<T>(
     body: Record<string, string>,
     allowRetry: boolean,
-    parseSuccess: (status: number, parsed: JsonBody | null) => T,
+    parseSuccess: (status: number, parsed: JsonBody | null, requestId: string | undefined) => T,
   ): Promise<T> {
     let lastError: unknown;
 
@@ -190,7 +194,7 @@ export class TrigvClient {
 
   private async requestOnce<T>(
     body: Record<string, string>,
-    parseSuccess: (status: number, parsed: JsonBody | null) => T,
+    parseSuccess: (status: number, parsed: JsonBody | null, requestId: string | undefined) => T,
   ): Promise<T> {
     const url = `${this.baseUrl}/v1/events`;
     const controller = new AbortController();
@@ -213,7 +217,11 @@ export class TrigvClient {
       const parsed = parseJson(text);
 
       if (response.ok) {
-        return parseSuccess(response.status, parsed);
+        return parseSuccess(
+          response.status,
+          parsed,
+          response.headers.get('X-Request-ID') || undefined,
+        );
       }
 
       errorFromResponse(
