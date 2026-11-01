@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rate limit is 60 requests per minute per workspace.
 - Invalid JSON bodies return 422.
 
+### Fixed
+
+- The `trigv-mcp` command did nothing when started through `npx` or `node_modules/.bin` (a symlink), so no MCP client could use it. It now starts.
+- A retry wait is no longer cut short by a request timeout shorter than the backoff. Backoff is capped at 8 seconds.
+- `Retry-After` accepts fractional seconds.
+
 ### Added
 
 - Typed 409 (`ConflictError`) and 503 (`ServiceUnavailableError`) errors, retried with `Retry-After` when `idempotency_key` is set.

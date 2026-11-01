@@ -80,7 +80,7 @@ Sends a notification event via `POST /v1/events`.
 
 ## Idempotency
 
-When you set `idempotency_key`, retries with the same key return the existing event (`duplicate: true`, HTTP 200, message `already stored`) without billing again. A 409, 502, 503 or 504, a network error or a timeout is retried automatically with the same key, waiting for `Retry-After`. If `Retry-After` is longer than the request timeout, the original error is thrown at once, without waiting.
+When you set `idempotency_key`, retries with the same key return the existing event (`duplicate: true`, HTTP 200, message `already stored`) without sending it again. A 409, 429, 502, 503 or 504, a network error or a timeout is retried automatically with the same key, waiting for `Retry-After`. If `Retry-After` is longer than the request timeout, the original error is thrown at once, without waiting.
 
 ## Error handling
 
@@ -134,7 +134,13 @@ For a local checkout during development:
 
 ### Claude Code
 
-Add to `~/.claude/settings.json` or project `.claude/settings.json`:
+Run:
+
+```bash
+claude mcp add trigv --env TRIGV_API_KEY=trgv_your_api_key_here -- npx -y @trigv/mcp
+```
+
+Or add the same server to `.mcp.json` in your project:
 
 ```json
 {

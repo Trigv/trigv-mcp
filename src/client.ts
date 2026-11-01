@@ -181,18 +181,7 @@ export class TrigvClient {
         }
         const waitMs = retryAfterMs ?? retryBackoffMs(attempt);
 
-        const waitAbort = new AbortController();
-        const waitTimeout = setTimeout(() => waitAbort.abort(new TimeoutError()), this.timeout);
-        try {
-          await sleep(waitMs, waitAbort.signal);
-        } catch (waitError) {
-          if (waitError instanceof TimeoutError) {
-            throw waitError;
-          }
-          throw new TimeoutError();
-        } finally {
-          clearTimeout(waitTimeout);
-        }
+        await sleep(waitMs);
       }
     }
 

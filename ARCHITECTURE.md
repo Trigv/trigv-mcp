@@ -142,7 +142,7 @@ Matches `trigv-node` `src/client.ts`:
 
 - **Unit:** HTTP client with mocked `fetch` (same matrix as `trigv-node` tests).
 - **Unit:** `send_event` tool handler — success, validation, missing key, auth error formatting.
-- **CI:** lint, format, typecheck, test, build on Node 18/20/22.
+- **CI:** lint, format, typecheck, test, build on Node 20/22 (the dev toolchain needs Node 20.19+; the shipped code needs Node 18).
 
 No live API calls in CI.
 

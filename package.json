@@ -46,6 +46,10 @@
     "type": "git",
     "url": "https://github.com/Trigv/trigv-mcp.git"
   },
+  "homepage": "https://github.com/Trigv/trigv-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/Trigv/trigv-mcp/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.4.3"
