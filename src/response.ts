@@ -1,5 +1,11 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { TrigvError, ValidationError } from './errors.js';
+import {
+  ConflictError,
+  RateLimitError,
+  ServiceUnavailableError,
+  TrigvError,
+  ValidationError,
+} from './errors.js';
 import type { SendEventResult } from './types.js';
 
 export interface ToolSuccessPayload {
@@ -16,6 +22,8 @@ export interface ToolErrorPayload {
     errors?: Record<string, string[]>;
     status_code?: number;
     retryable?: boolean;
+    retry_after_seconds?: number;
+    request_id?: string;
   };
 }
 
@@ -50,7 +58,14 @@ export function formatErrorResult(error: unknown, apiKey?: string): CallToolResu
   const message = redactSecrets(structuredContent.error.message, apiKey);
 
   return {
-    content: [{ type: 'text', text: `${structuredContent.error.type}: ${message}` }],
+    content: [
+      {
+        type: 'text',
+        text: structuredContent.error.request_id
+          ? `${structuredContent.error.type}: ${message} (request id ${structuredContent.error.request_id})`
+          : `${structuredContent.error.type}: ${message}`,
+      },
+    ],
     structuredContent: structuredContent as unknown as Record<string, unknown>,
     isError: true,
   };
@@ -72,8 +87,18 @@ export function buildErrorPayload(error: unknown, apiKey?: string): ToolErrorPay
     if ('statusCode' in error && typeof error.statusCode === 'number') {
       payload.error.status_code = error.statusCode;
     }
-    if ('retryable' in error && typeof error.retryable === 'boolean') {
-      payload.error.retryable = error.retryable;
+    if (
+      error instanceof RateLimitError ||
+      error instanceof ConflictError ||
+      error instanceof ServiceUnavailableError
+    ) {
+      payload.error.retryable = true;
+      if (error.retryAfterMs !== undefined) {
+        payload.error.retry_after_seconds = Math.ceil(error.retryAfterMs / 1000);
+      }
+    }
+    if (error.requestId) {
+      payload.error.request_id = error.requestId;
     }
 
     return payload;

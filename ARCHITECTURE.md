@@ -31,12 +31,12 @@
 │  Claude,    │                             └────────┬─────────┘
 │  VS Code)   │                                      │ HTTPS
 └─────────────┘                                      ▼
-                                            api.trigv.com/api/v1/events
+                                            api.trigv.com/v1/events
 ```
 
 - Client spawns `npx @trigv/mcp` or `node dist/index.js` as a child process.
 - **stdout** is reserved for JSON-RPC — all logging uses **stderr** (`console.error`).
-- No Streamable HTTP in v0.1.0 (local-only; remote hosting is out of scope).
+- No Streamable HTTP in v0.2.0 (local-only; remote hosting is out of scope).
 
 ---
 
@@ -77,7 +77,7 @@
 
 **Prohibited:** `api_key`, `icon`, and any unknown keys — rejected in handler validation (422-style) before HTTP.
 
-**Authentication:** `TRIGV_API_KEY` environment variable (Bearer header). Optional `TRIGV_BASE_URL` (default `https://api.trigv.com/api`). Key is never returned in tool output or error text.
+**Authentication:** `TRIGV_API_KEY` environment variable (Bearer header). Optional `TRIGV_BASE_URL` (default `https://api.trigv.com`; a URL ending in `/api` also works). Key is never returned in tool output or error text.
 
 **Success response** (`structuredContent`):
 
@@ -86,9 +86,9 @@
   "success": true,
   "duplicate": false,
   "event": {
-    "public_id": "evt_…",
+    "public_id": "01JXXXXXXXXXXXXXXXXXXXXXXX",
     "event_uuid": "…",
-    "status": "queued",
+    "status": "sent",
     "level": "info",
     "event_type": null,
     "target_device_count": 2,
@@ -123,7 +123,7 @@ Provided automatically by `McpServer` when tools are registered — no custom im
 Matches `trigv-node` `src/client.ts`:
 
 - `POST {base_url}/v1/events`
-- Headers: `Accept: application/json`, `Content-Type: application/json`, `Authorization: Bearer …`, `User-Agent: trigv-mcp/0.1.0`
+- Headers: `Accept: application/json`, `Content-Type: application/json`, `Authorization: Bearer …`, `User-Agent: trigv-mcp/0.2.0`
 - Client-side validation via shared rules (trim, max lengths, enums, prohibited fields)
 - Retry: max 2 retries, exponential backoff 0.5s / 1s + jitter; only when idempotency key set (or connection GET — not used here)
 - Status mapping: 401 → AuthenticationError, 403 → AuthorizationError, 404 → NotFoundError, 422 → ValidationError, 429 → RateLimitError
@@ -148,7 +148,7 @@ No live API calls in CI.
 
 ---
 
-## Out of scope (v0.1.0)
+## Out of scope (v0.2.0)
 
 - `verify_connection` tool / `GET /v1/connection`
 - Streamable HTTP / SSE transports

@@ -42,7 +42,7 @@ Example tool call:
 | Variable | Required | Default | Description |
 |----------|:--------:|---------|-------------|
 | `TRIGV_API_KEY` | Yes | — | Workspace ingest API key (`trgv_…`) |
-| `TRIGV_BASE_URL` | No | `https://api.trigv.com/api` | Override for local dev (`http://trigv-platform.test/api`) |
+| `TRIGV_BASE_URL` | No | `https://api.trigv.com` | API base URL. A URL ending in `/api` still works |
 
 The API key is sent as `Authorization: Bearer` and is **never** included in tool responses or error messages.
 
@@ -52,19 +52,19 @@ Sends a notification event via `POST /v1/events`.
 
 | Field | Required | Description |
 |-------|:--------:|-------------|
-| `channel` | Yes | Channel slug (e.g. `general`, `deploys`) |
-| `title` | Yes | Notification title |
-| `description` | No | Body text |
-| `image_url` | No | HTTPS image URL (not stored server-side) |
+| `channel` | Yes | Channel slug (e.g. `general`, `deploys`; max 120 characters) |
+| `title` | Yes | Notification title (max 255 characters) |
+| `description` | No | Body text (max 1000 characters) |
+| `image_url` | No | Image URL (max 2048 characters; not stored server-side) |
 | `url` | No | Destination URL for the notification (max 2048 characters; not stored server-side) |
 | `level` | No | `info`, `success`, `warning`, `error` (default: `info`) |
 | `delivery_urgency` | No | `standard` or `time_sensitive` (default: `standard`) |
-| `event_type` | No | Free-form label (e.g. `deploy.completed`) |
-| `idempotency_key` | No | Dedup key per workspace |
+| `event_type` | No | Free-form label (e.g. `deploy.completed`, max 120 characters) |
+| `idempotency_key` | No | Dedup key per workspace (max 190 characters) |
 
 **Success response** includes `event.public_id`, `duplicate` (true when HTTP 200), and other event metadata.
 
-**Error response** includes `error.type`, `error.message`, and optional `error.errors` for validation failures.
+**Error response** includes `error.type`, `error.message`, and optional `error.errors` for validation failures, `error.status_code`, `error.retryable`, `error.retry_after_seconds` and `error.request_id` (the `X-Request-ID` header; quote it to support).
 
 ## Levels
 
@@ -80,7 +80,7 @@ Sends a notification event via `POST /v1/events`.
 
 ## Idempotency
 
-When you set `idempotency_key`, retries with the same key return the existing event (`duplicate: true`) without billing again.
+When you set `idempotency_key`, retries with the same key return the existing event (`duplicate: true`, HTTP 200, message `already stored`) without billing again. A 409 or 503 is retried automatically with the same key, waiting for `Retry-After`.
 
 ## Error handling
 
@@ -91,7 +91,9 @@ When you set `idempotency_key`, retries with the same key return the existing ev
 | `AuthenticationError` | HTTP 401 |
 | `AuthorizationError` | HTTP 403 |
 | `NotFoundError` | Channel not found (HTTP 404) |
-| `RateLimitError` | HTTP 429 |
+| `ConflictError` | HTTP 409: another request is delivering the same `idempotency_key` |
+| `RateLimitError` | HTTP 429: 60 requests per minute per workspace |
+| `ServiceUnavailableError` | HTTP 503: push unavailable |
 | `NetworkError` / `TimeoutError` | Connection issues |
 
 ## MCP client configuration
@@ -123,8 +125,7 @@ For a local checkout during development:
       "command": "node",
       "args": ["/path/to/trigv-mcp/dist/index.js"],
       "env": {
-        "TRIGV_API_KEY": "trgv_your_api_key_here",
-        "TRIGV_BASE_URL": "http://trigv-platform.test/api"
+        "TRIGV_API_KEY": "trgv_your_api_key_here"
       }
     }
   }

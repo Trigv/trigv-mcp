@@ -23,7 +23,7 @@ export const sendEventInputSchema = {
     .describe('Optional body text (not stored server-side)'),
   image_url: zMaxCodePoints(FIELD_MAX_LENGTHS.image_url)
     .optional()
-    .describe('Optional HTTPS image URL (not stored server-side)'),
+    .describe('Optional image URL (not stored server-side)'),
   url: zMaxCodePoints(FIELD_MAX_LENGTHS.url)
     .optional()
     .describe('Optional destination URL (not stored server-side)'),
@@ -40,7 +40,7 @@ export const sendEventInputSchema = {
     .describe('Free-form event label (e.g. deploy.completed)'),
   idempotency_key: zMaxCodePoints(FIELD_MAX_LENGTHS.idempotency_key)
     .optional()
-    .describe('Dedup key per workspace; retries return the existing event'),
+    .describe('Dedup key per workspace; retries return the existing event ("already stored")'),
 };
 
 export const sendEventOutputSchema = {
@@ -50,11 +50,11 @@ export const sendEventOutputSchema = {
     .object({
       public_id: z.string(),
       event_uuid: z.string(),
-      status: z.string(),
-      level: z.string(),
+      status: z.enum(['pending', 'sent', 'failed']),
+      level: z.enum(['info', 'success', 'warning', 'error']),
       event_type: z.string().nullable(),
       target_device_count: z.number(),
-      received_at: z.string(),
+      received_at: z.string().nullable(),
     })
     .optional(),
   error: z
@@ -64,6 +64,8 @@ export const sendEventOutputSchema = {
       errors: z.record(z.string(), z.array(z.string())).optional(),
       status_code: z.number().optional(),
       retryable: z.boolean().optional(),
+      retry_after_seconds: z.number().optional(),
+      request_id: z.string().optional(),
     })
     .optional(),
 };

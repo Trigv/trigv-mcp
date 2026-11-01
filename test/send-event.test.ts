@@ -4,9 +4,9 @@ import { runSendEvent } from '../src/tools/send-event.js';
 const API_KEY = 'trgv_testkey1_abcdefghijklmnopqrstuvwxyz123456';
 
 const sampleEvent = {
-  public_id: 'evt_abc',
+  public_id: '01JXXXXXXXXXXXXXXXXXXXXXXX',
   event_uuid: '550e8400-e29b-41d4-a716-446655440000',
-  status: 'queued',
+  status: 'sent',
   level: 'success',
   event_type: 'deploy.completed',
   target_device_count: 2,
@@ -28,14 +28,14 @@ describe('send_event tool', () => {
 
     const result = await runSendEvent(
       { channel: 'deploys', title: 'Production deploy complete', level: 'success' },
-      { apiKey: API_KEY, fetch, baseUrl: 'https://api.trigv.com/api' },
+      { apiKey: API_KEY, fetch, baseUrl: 'https://api.trigv.com' },
     );
 
     expect(result.isError).toBeUndefined();
     expect(result.structuredContent).toMatchObject({
       success: true,
       duplicate: false,
-      event: { public_id: 'evt_abc' },
+      event: { public_id: '01JXXXXXXXXXXXXXXXXXXXXXXX' },
     });
   });
 
@@ -145,5 +145,51 @@ describe('send_event tool', () => {
       error: { type: 'ValidationError' },
     });
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('returns request id, retry hint and status for a 409', async () => {
+    const fetch = mockFetch(
+      () =>
+        new Response(JSON.stringify({ message: 'busy' }), {
+          status: 409,
+          headers: { 'Retry-After': '7', 'X-Request-ID': '01JREQXXXXXXXXXXXXXXXXXXXX' },
+        }),
+    );
+
+    const result = await runSendEvent(
+      { channel: 'general', title: 'x' },
+      { apiKey: API_KEY, fetch },
+    );
+
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      success: false,
+      error: {
+        type: 'ConflictError',
+        status_code: 409,
+        retryable: true,
+        retry_after_seconds: 7,
+        request_id: '01JREQXXXXXXXXXXXXXXXXXXXX',
+      },
+    });
+  });
+
+  it('returns a 503 error with retry hint', async () => {
+    const fetch = mockFetch(
+      () =>
+        new Response(JSON.stringify({ message: 'down' }), {
+          status: 503,
+          headers: { 'Retry-After': '3' },
+        }),
+    );
+
+    const result = await runSendEvent(
+      { channel: 'general', title: 'x' },
+      { apiKey: API_KEY, fetch },
+    );
+
+    expect(result.structuredContent).toMatchObject({
+      error: { type: 'ServiceUnavailableError', retryable: true, retry_after_seconds: 3 },
+    });
   });
 });
